@@ -36,6 +36,24 @@ int my_print(const char *s) {
 
 int main (int argc, char **argv) {
     my_print("Hello, World!\n");
+    /* create diff cases for num of arg
+    might wanna change this to a switch statement
+    with all the different cases
+    */
+    if (argc == 1){
+        /*copy first 10 lines of standard input*/
+        char buffer[100];
+        int i = 0;
+        while (i < 10){
+            int n = read(0, buffer, 100);
+            if (n == 0){
+                break;
+            }
+            my_write(1, buffer, n);
+            i++;
+        }
+    } 
+
     return 0;
 }
 
