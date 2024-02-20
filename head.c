@@ -5,7 +5,6 @@
 static int my_write(int fd, const void *buf, size_t count) {
     size_t bytes_written = 0;
     size_t bytes_remaining = count;
-
     const char *buf_addr = buf;
 
     while (bytes_remaining > 0) {
@@ -40,20 +39,31 @@ int main (int argc, char **argv) {
     might wanna change this to a switch statement
     with all the different cases
     */
-    printf("argc: %d\n", argc);
-    if (argc == 1){
-        /*copy first 10 lines of standard input*/
-        char buffer[100];
-        int i = 0;
-        while (i < 10){
-            int n = read(0, buffer, 100);
-            if (n == 0){
-                break;
+/*ejejre*/
+    switch (argc) {
+        case 1:
+            /*copy first 10 lines of standard input*/
+            char buffer[100];
+            int i = 0;
+            while (i < 10){
+                int n = read(0, buffer, 100);
+                if (n == 0){
+                    break;
+                }
+                my_write(1, buffer, n);
+                i++;
             }
-            my_write(1, buffer, n);
-            i++;
-        }
-    } 
-    return 0;
+            break;
+        case 2:
+            /*copy first 10 lines of file*/
+            
+            break;
+        case 3:
+            /*copy first n lines of file*/
+            break;
+        default:
+            my_print("Error: too many arguments\n");
+            break;
+    }
 }
 
