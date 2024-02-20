@@ -11,10 +11,10 @@ static int my_write(int fd, const void *buf, size_t count) {
     while (bytes_remaining > 0) {
         bytes_written = write(fd, buf_addr, bytes_remaining);
         if (bytes_written == -1) {
-            printf("Error writing to file: \n", errno); 
+            printf("Error writing to file\n"); 
             return -1;
         }
-        bytes_remaining -= bytes_written;h
+        bytes_remaining -= bytes_written;
         buf_addr += bytes_written;
     }
 
@@ -33,7 +33,6 @@ static int my_strlen(const char *s) {
 int my_print(const char *s) {
     return my_write(1, s, my_strlen(s));
 }
-
 
 int main (int argc, char **argv) {
    
@@ -55,7 +54,6 @@ int main (int argc, char **argv) {
             i++;
         }
     } 
-
     return 0;
 }
 
