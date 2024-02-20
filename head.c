@@ -11,9 +11,10 @@ static int my_write(int fd, const void *buf, size_t count) {
     while (bytes_remaining > 0) {
         bytes_written = write(fd, buf_addr, bytes_remaining);
         if (bytes_written == -1) {
+            printf("Error writing to file: \n", errno); 
             return -1;
         }
-        bytes_remaining -= bytes_written;
+        bytes_remaining -= bytes_written;h
         buf_addr += bytes_written;
     }
 
@@ -35,11 +36,12 @@ int my_print(const char *s) {
 
 
 int main (int argc, char **argv) {
-    my_print("Hello, World!\n");
+   
     /* create diff cases for num of arg
     might wanna change this to a switch statement
     with all the different cases
     */
+    printf("argc: %d\n", argc);
     if (argc == 1){
         /*copy first 10 lines of standard input*/
         char buffer[100];
