@@ -64,7 +64,7 @@ int my_print(const char *s) {
     return my_write(1, s, my_strlen(s));
 }
 
-void copyLines(int source_fd, int dest_fd, int num_lines) {
+void copy_lines(int source_fd, int dest_fd, int num_lines) {
     char buffer[100];
     char *lines[num_lines];
     int line_lengths[num_lines];
@@ -75,7 +75,7 @@ void copyLines(int source_fd, int dest_fd, int num_lines) {
         line_lengths[i] = 0;
     }
 
-    while (1) {
+    while (true) {
         int line_length = read_line(source_fd, buffer, sizeof(buffer));
         if (line_length == 0) {
             break;
@@ -87,7 +87,10 @@ void copyLines(int source_fd, int dest_fd, int num_lines) {
                 perror("Error allocating memory");
                 exit(EXIT_FAILURE);
             }
-            memcpy(lines[line_count], buffer, line_length);
+            // Copy characters manually
+            for (int i = 0; i < line_length; i++) {
+                lines[line_count][i] = buffer[i];
+            }
             lines[line_count][line_length] = '\0';
             line_lengths[line_count] = line_length;
         } else {
@@ -97,7 +100,10 @@ void copyLines(int source_fd, int dest_fd, int num_lines) {
                 perror("Error allocating memory");
                 exit(EXIT_FAILURE);
             }
-            memcpy(lines[line_count % num_lines], buffer, line_length);
+            // Copy characters manually
+            for (int i = 0; i < line_length; i++) {
+                lines[line_count % num_lines][i] = buffer[i];
+            }
             lines[line_count % num_lines][line_length] = '\0';
             line_lengths[line_count % num_lines] = line_length;
         }
@@ -109,7 +115,10 @@ void copyLines(int source_fd, int dest_fd, int num_lines) {
     int start = (line_count > num_lines) ? (line_count % num_lines) : 0;
     int end = (line_count > num_lines) ? num_lines : line_count;
     for (int i = 0; i < end; i++) {
-        my_write(dest_fd, lines[(start + i) % num_lines], line_lengths[(start + i) % num_lines]);
+        // Write characters manually
+        for (int j = 0; j < line_lengths[(start + i) % num_lines]; j++) {
+            my_write(dest_fd, &lines[(start + i) % num_lines][j], 1);
+        }
     }
 
     // Free allocated memory
@@ -119,13 +128,14 @@ void copyLines(int source_fd, int dest_fd, int num_lines) {
 }
 
 
+
 int main(int argc, char **argv) {
     int fd;
 
     switch (argc) {
         case 1: {
             // Copy last 10 lines from standard input
-            copyLines(0, 1, 10);
+            copy_lines(0, 1, 10);
             break;
         }
         case 2: {
@@ -135,7 +145,7 @@ int main(int argc, char **argv) {
                 my_print("Error: file not found\n");
                 return 1;
             }
-            copyLines(fd, 1, 10);
+            copy_lines(fd, 1, 10);
             close(fd);
             break;
         }
@@ -146,7 +156,7 @@ int main(int argc, char **argv) {
             }
             // Copy last n lines from standard input
             int n = my_atoi(argv[2]);
-            copyLines(0, 1, n);
+            copy_lines(0, 1, n);
             break;
         }
         case 4: {
@@ -158,7 +168,7 @@ int main(int argc, char **argv) {
                     my_print("Error: file not found\n");
                     return 1;
                 }
-                copyLines(fd, 1, n);
+                copy_lines(fd, 1, n);
                 close(fd);
             } else {
                 // Copy last 10 lines from file
@@ -168,7 +178,7 @@ int main(int argc, char **argv) {
                     return 1;
                 }
                 int n = my_atoi(argv[3]);
-                copyLines(fd, 1, n);
+                copy_lines(fd, 1, n);
                 close(fd);
             }
             break;
