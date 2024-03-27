@@ -75,7 +75,7 @@ void copy_lines(int source_fd, int dest_fd, int num_lines) {
         line_lengths[i] = 0;
     }
 
-    while (true) {
+    while (1) {
         int line_length = read_line(source_fd, buffer, sizeof(buffer));
         if (line_length == 0) {
             break;
