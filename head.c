@@ -86,7 +86,8 @@ int main(int argc, char **argv) {
         }
         case 2: {
             /* Copy first 10 lines of standard input */
-            copyLines(0, 1, 10);
+            fd = open(argv[1] ,O_RDONLY);
+            copyLines(fd, 1, 10);
             break;
         }
         case 3: {
