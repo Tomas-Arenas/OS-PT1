@@ -119,7 +119,7 @@ static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
             high = mid - 1;
         }
     }
-    printf("The word %s does not figure in the dictionary, %s\n", word, mid);
+    printf("The word %s does not figure in the dictionary\n", word);
     return 0;
 }
 
