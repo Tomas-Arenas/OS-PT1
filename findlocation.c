@@ -104,14 +104,14 @@ static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
     size_t mid;
     while (low <= high) {
         mid = (low + high) / 2;
-        if (strncmp(dict[mid].prefix, my_atoi(word), 6) == 0) {
+        if ((my_atoi(dict[mid].prefix)- my_atoi(word)) == 0) {
             my_write(1, "The location of ",  my_strlen("The location of "));
             my_write(1, dict[mid].prefix, 6);
             my_write(1, " is ", my_strlen(" is "));
             my_write(1, dict[mid].location, 25);
             my_write(1, "\n", my_strlen("\n"));
             return 0;
-        } else if (strncmp(dict[mid].prefix, my_atoi(word), 6) < 0) {
+        } else if ((my_atoi(dict[mid].prefix)- my_atoi(word)) < 0) {
             low = mid + 1;
         } else {
             high = mid - 1;
