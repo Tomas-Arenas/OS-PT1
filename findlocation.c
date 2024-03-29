@@ -147,7 +147,7 @@ int main (int argc, char **argv) {
             return 1;
         }
         case 2: {
-            map_file('nanpa.txt', &file_size);
+            map_file("nanpa.txt", &file_size);
             binary_search(ptr, file_size, argv[1]);
             if (munmap(ptr, file_size) == -1) {
                 perror("munmap");
