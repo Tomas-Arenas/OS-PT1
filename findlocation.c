@@ -13,6 +13,53 @@ typedef struct {
   char newline;      // '\n'
 } nanpa_entry;
 
+
+//map file to memory function
+static void *map_file(const char *filename, size_t *size) {
+    int fd;
+    off_t res_lseek;
+    void *ptr;
+
+    /* Open the file for reading */
+    fd = open(filename, O_RDONLY);
+    if (fd == -1) {
+        perror("Error opening file");
+        return NULL;
+    }
+
+    /* Get the size of the file */
+    res_lseek = lseek(fd, 0, SEEK_END);
+    if (res_lseek == -1) {
+        perror("Error seeking file");
+        if (close(fd) == -1) {
+            perror("Error closing file");
+        }
+        return NULL;
+    }
+    *size = res_lseek;
+
+    /* Map the file into memory */
+    ptr = mmap(NULL, *size, PROT_READ, MAP_SHARED, fd, 0);
+    if (ptr == MAP_FAILED) {
+        perror("Error mapping file");
+        if (close(fd) == -1) {
+            perror("Error closing file");
+        }
+        return NULL;
+    }
+
+    /* Close the file */
+    if (close(fd) == -1) {
+        perror("Error closing file");
+        return NULL;
+    }
+    
+    return ptr;
+}
+
+
+
+
 static int my_atoi(const char *s) {
     int result = 0;
     int counter = 0;
@@ -100,80 +147,30 @@ int main (int argc, char **argv) {
             return 1;
         }
         case 2: {
-            fd = open("nanpa.txt", O_RDONLY);
-            if (fd == -1) {
-                my_write(STDERR_FILENO, "Error: file not found\n", my_strlen("Error: file not found\n"));
-                return 1;
-            }
-            struct stat sb;
-            if (fstat(fd, &sb) == -1) {
-                perror("fstat");
-                return 1;
-            }
-            void *ptr = mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
-            if (ptr == MAP_FAILED) {
-                perror("mmap");
-                return 1;
-            }
-            if (binary_search(ptr, sb.st_size, argv[1]) == -2) {
-                my_write(STDERR_FILENO, "Error: prefix not found\n", my_strlen("Error: prefix not found\n"));
-                return 1;
-            }
-            if (munmap(ptr, sb.st_size) == -1) {
-                perror("munmap");
-                return 1;
-            }
-            close(fd);
-            break;
-        }
-        case 3:{
-            fd = open(argv[1], O_RDONLY);
-            if (fd == -1) {
-                my_write(STDERR_FILENO, "Error: file not found\n", my_strlen("Error: file not found\n"));
-                return 1;
-            }
-            //get len of file 
-            res_lseek = lseek(fd, 0, SEEK_END);
-            if (res_lseek == -1) {
-                my_write(STDERR_FILENO, "Error: lseek failed\n", my_strlen("Error: lseek failed\n"));
-                if (close(fd) == -1) {
-                    perror("close");
-                }
-                return 1;
-            }
-            file_size = res_lseek;
-            if (file_size < 1) {
-                my_write(STDERR_FILENO, "Error: file is empty\n", my_strlen("Error: file is empty\n"));
-                if (close(fd) == -1) {
-                    my_write(STDERR_FILENO, "Error: close failed\n", my_strlen("Error: close failed\n"));
-                    return 1;
-                }
-                return 0;
-            }
-            ptr = mmap(NULL, file_size, PROT_READ, MAP_SHARED, fd, 0);
-            if (ptr == MAP_FAILED) {
-                perror("mmap");
-                if (close(fd) == -1) {
-                    perror("close");
-                }
-                return 1;
-            }
-
-            if (binary_search(ptr, file_size, argv[2]) == -2) {
-                my_write(STDERR_FILENO, "Error: prefix not found\n", my_strlen("Error: prefix not found\n"));
-                return 1;
-            }
+            map_file('nanpa.txt', &file_size);
+            binary_search(ptr, file_size, argv[1]);
             if (munmap(ptr, file_size) == -1) {
                 perror("munmap");
                 return 1;
             }
-            close(fd);
+            break;
+            
+        }
+        case 3:{
+            filename = argv[1];
+            word = argv[2];
+            ptr = map_file(filename, &file_size);
+            if (ptr == NULL) {
+                return 1;
+            }
+            binary_search(ptr, file_size, word);
+            if (munmap(ptr, file_size) == -1) {
+                perror("munmap");
+                return 1;
+            }
             break;
         }
-        default: {
-            my_write(STDERR_FILENO, "Error: too many arguments\n", my_strlen("Error: too many arguments\n"));
-            return 1;
-        }
+            
     }
     return 0;
 }
