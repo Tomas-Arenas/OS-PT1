@@ -6,6 +6,8 @@
 
 
 static int my_atoi(const char *s) {
+    //simpler way to do atoi
+
     int result = 0;
     int counter = 0;
     while (s[counter] != '\0') {
@@ -13,9 +15,10 @@ static int my_atoi(const char *s) {
             return -1;
         }
         result = result * 10 + s[counter] - '0';
-        counter++;
-    }
-    return result;
+        counter++; 
+    }       
+
+    
 }
 
 int read_line(int fd, char* buffer, size_t max_size) {

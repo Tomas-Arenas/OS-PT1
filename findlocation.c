@@ -5,8 +5,6 @@
 #include <string.h>
 #include <sys/mman.h>
 
-static int binary_search(void *ptr, size_t size, char *word);
-static int binary_search_helper(nanpa_entry *dict, size_t n, char *word);
 
 
 typedef struct {
@@ -56,15 +54,6 @@ static int my_strlen(const char *s) {
 }
 
 
-static int binary_search(void *ptr, size_t size, char *word){
-    size_t n = size / sizeof(nanpa_entry);
-    if (size % sizeof(nanpa_entry) != 0) {
-        fprintf(stderr, "Size is not a multiple of nanpa_entry\n");
-        return -1;
-    }
-    return binary_search_helper((nanpa_entry *) ptr, n, word);
-
-}
 
 static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
 {
@@ -88,6 +77,16 @@ static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
     }
     return -1;
 }
+
+static int binary_search(void *ptr, size_t size, char *word){
+    size_t n = size / sizeof(nanpa_entry);
+    if (size % sizeof(nanpa_entry) != 0) {
+        fprintf(stderr, "Size is not a multiple of nanpa_entry\n");
+        return -1;
+    }
+    return binary_search_helper((nanpa_entry *) ptr, n, word);
+}
+
 
 
 
