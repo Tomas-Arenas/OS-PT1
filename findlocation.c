@@ -110,7 +110,11 @@ static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
         mid = (low + high) >> 1;
         int res = strncmp(dict[mid].prefix, word, 6);
         if (res == 0) {
-            printf("The location of %s is %s\n", word, dict[mid].location);
+            my_write(1, "The location of ", my_strlen("The location of "));
+            my_write(1, dict[mid].prefix, 6);
+            my_write(1, " is ", my_strlen(" is "));
+            my_write(1, dict[mid].location, 25);
+            my_write(1, "\n", my_strlen("\n"));
             return 0;
         }
         if (res < 0) {
