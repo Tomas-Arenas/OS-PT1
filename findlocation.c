@@ -97,31 +97,27 @@ static int my_strlen(const char *s) {
     return len;
 }
 
-static int binary_search_helper(nanpa_entry *dict, size_t n, int word)
+static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
 {
     size_t low = 0;
     size_t high = n - 1;
     size_t mid;
-
-    word = (size_t) word; 
-
-
     while (low <= high) {
         mid = (low + high) / 2;
-        if (strncmp(dict[mid].prefix, word, 6) == 0) {
+        if (strncmp(dict[mid].prefix, my_atoi(word), 6) == 0) {
             my_write(1, "The location of ",  my_strlen("The location of "));
             my_write(1, dict[mid].prefix, 6);
             my_write(1, " is ", my_strlen(" is "));
             my_write(1, dict[mid].location, 25);
             my_write(1, "\n", my_strlen("\n"));
             return 0;
-        } else if (strncmp(dict[mid].prefix, word, 6) < 0) {
+        } else if (strncmp(dict[mid].prefix, my_atoi(word), 6) < 0) {
             low = mid + 1;
         } else {
             high = mid - 1;
         }
     }
-    printf("The word does not figure in the dictionary\n");
+    printf("The word %s does not figure in the dictionary\n", word);
     return 0;
 }
 
@@ -132,8 +128,7 @@ static int binary_search(void *ptr, size_t size, char *word){
         return -1;
     }
     size_t n = size / sizeof(nanpa_entry);
-    int trans_word = my_atoi(word);
-    return binary_search_helper((nanpa_entry *) ptr, n, trans_word);
+    return binary_search_helper((nanpa_entry *) ptr, n, word);
 }
 
 int main (int argc, char **argv) {
@@ -160,7 +155,6 @@ int main (int argc, char **argv) {
         case 3:{
             filename = argv[1];
             word = argv[2];
-            
             ptr = map_file(filename, &file_size);
             if (ptr == NULL) {
                 return 1;
