@@ -8,6 +8,7 @@
 #include <errno.h>
 
 
+
 typedef struct {
   char prefix[6];    // 6 digits
   char location[25]; // 25 characters
@@ -102,28 +103,29 @@ static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
     size_t low = 0;
     size_t high = n - 1;
     size_t mid;
-    while (low <= high) {
-        mid = (low + high) / 2;
-        if ((my_atoi(dict[mid].prefix)- my_atoi(word)) == 0) {
-            my_write(1, "The location of ",  my_strlen("The location of "));
-            my_write(1, dict[mid].prefix, 6);
-            my_write(1, " is ", my_strlen(" is "));
-            my_write(1, dict[mid].location, 25);
-            my_write(1, "\n", my_strlen("\n"));
+    size_t nn;
+    nn = (ssize_t) n;
+
+    for (low=((ssize_t) 0), high=(nn-((ssize_t) 1)); low<=high;) {
+        mid = (low + high) >> 1;
+        int res = strncmp(dict[mid].prefix, word, 6);
+        if (res == 0) {
+            printf("The location of %s is %s\n", word, dict[mid].location);
             return 0;
-        } else if ((my_atoi(dict[mid].prefix)- my_atoi(word)) < 0) {
+        }
+        if (res < 0) {
             low = mid + 1;
         } else {
             high = mid - 1;
         }
     }
-    printf("The word %s does not figure in the dictionary\n", word);
+    printf("The word %s does not figure in the dictionary, %s\n", word, mid);
     return 0;
 }
 
 static int binary_search(void *ptr, size_t size, char *word){
    
-    if (size % sizeof(nanpa_entry) != 0) {
+    if (size % sizeof(nanpa_entry) != ((size_t) 0)) {
         fprintf(stderr, "Size is not a multiple of nanpa_entry\n");
         return -1;
     }
@@ -138,7 +140,7 @@ int main (int argc, char **argv) {
 
     switch(argc) {
         case 1: {
-            my_write(STDERR_FILENO, "\nThis is not a well-formed call to findlocation", 
+            my_write(STDERR_FILENO, "\nThis is not a well-formed call to findlocation.\n", 
             my_strlen("\nThis is not a well-formed call to findlocation.\n"));
             return 1;
         }
