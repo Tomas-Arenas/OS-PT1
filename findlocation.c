@@ -58,9 +58,6 @@ static void *map_file(const char *filename, size_t *size) {
     return ptr;
 }
 
-
-
-
 static int my_atoi(const char *s) {
     int result = 0;
     int counter = 0;
@@ -102,9 +99,9 @@ static int my_strlen(const char *s) {
 
 static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
 {
-    int low = 0;
-    int high = n - 1;
-    int mid;
+    size_t low = 0;
+    size_t high = n - 1;
+    size_t mid;
     while (low <= high) {
         mid = (low + high) / 2;
         if (strncmp(dict[mid].prefix, word, 6) == 0) {
@@ -125,21 +122,19 @@ static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
 }
 
 static int binary_search(void *ptr, size_t size, char *word){
-    size_t n = size / sizeof(nanpa_entry);
+   
     if (size % sizeof(nanpa_entry) != 0) {
         fprintf(stderr, "Size is not a multiple of nanpa_entry\n");
         return -1;
     }
+    size_t n = size / sizeof(nanpa_entry);
     return binary_search_helper((nanpa_entry *) ptr, n, word);
 }
 
 int main (int argc, char **argv) {
-    int fd;
     size_t file_size;
     char *filename, *word;
     void *ptr;
-    off_t res_lseek;
-
 
     switch(argc) {
         case 1: {
@@ -148,7 +143,7 @@ int main (int argc, char **argv) {
             return 1;
         }
         case 2: {
-            map_file("nanpa.txt", &file_size);
+            ptr = map_file("nanpa.txt", &file_size);
             binary_search(ptr, file_size, argv[1]);
             if (munmap(ptr, file_size) == -1) {
                 perror("munmap");
