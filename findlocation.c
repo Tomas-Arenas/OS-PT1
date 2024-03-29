@@ -86,6 +86,12 @@ static int binary_search(void *ptr, size_t size, char *word){
 
 int main (int argc, char **argv) {
     int fd;
+    size_t file_size;
+    char *filename, *word;
+    void *ptr;
+    off_t res_lseek;
+
+
     switch(argc) {
         case 1: {
             my_write(STDERR_FILENO, "\nThis is not a well-formed call to findlocation", 
@@ -103,7 +109,7 @@ int main (int argc, char **argv) {
                 perror("fstat");
                 return 1;
             }
-            void *ptr = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+            void *ptr = mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
             if (ptr == MAP_FAILED) {
                 perror("mmap");
                 return 1;
@@ -120,31 +126,53 @@ int main (int argc, char **argv) {
             break;
         }
         case 3:{
-            fd = open(argv[2], O_RDONLY);
+            fd = open(argv[1], O_RDONLY);
             if (fd == -1) {
                 my_write(STDERR_FILENO, "Error: file not found\n", my_strlen("Error: file not found\n"));
                 return 1;
             }
-            struct stat sb;
-            if (fstat(fd, &sb) == -1) {
-                perror("fstat");
+            //get len of file 
+            res_lseek = lseek(fd, 0, SEEK_END);
+            if (res_lseek == -1) {
+                my_write(STDERR_FILENO, "Error: lseek failed\n", my_strlen("Error: lseek failed\n"));
+                if (close(fd) == -1) {
+                    perror("close");
+                }
                 return 1;
             }
-            void *ptr = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+            file_size = res_lseek;
+            if (file_size < 1) {
+                my_write(STDERR_FILENO, "Error: file is empty\n", my_strlen("Error: file is empty\n"));
+                if (close(fd) == -1) {
+                    my_write(STDERR_FILENO, "Error: close failed\n", my_strlen("Error: close failed\n"));
+                    return 1;
+                }
+                return 0;
+            }
+            ptr = mmap(NULL, file_size, PROT_READ, MAP_SHARED, fd, 0);
             if (ptr == MAP_FAILED) {
                 perror("mmap");
+                if (close(fd) == -1) {
+                    perror("close");
+                }
                 return 1;
             }
-            if (binary_search(ptr, sb.st_size, argv[1]) == -2) {
+
+            if (binary_search(ptr, file_size, argv[2]) == -2) {
                 my_write(STDERR_FILENO, "Error: prefix not found\n", my_strlen("Error: prefix not found\n"));
                 return 1;
             }
-            if (munmap(ptr, sb.st_size) == -1) {
+            if (munmap(ptr, file_size) == -1) {
                 perror("munmap");
                 return 1;
             }
             close(fd);
             break;
         }
+        default: {
+            my_write(STDERR_FILENO, "Error: too many arguments\n", my_strlen("Error: too many arguments\n"));
+            return 1;
+        }
     }
+    return 0;
 }
