@@ -97,11 +97,15 @@ static int my_strlen(const char *s) {
     return len;
 }
 
-static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
+static int binary_search_helper(nanpa_entry *dict, size_t n, int word)
 {
     size_t low = 0;
     size_t high = n - 1;
     size_t mid;
+
+    word = (size_t) word; 
+
+
     while (low <= high) {
         mid = (low + high) / 2;
         if (strncmp(dict[mid].prefix, word, 6) == 0) {
@@ -128,7 +132,8 @@ static int binary_search(void *ptr, size_t size, char *word){
         return -1;
     }
     size_t n = size / sizeof(nanpa_entry);
-    return binary_search_helper((nanpa_entry *) ptr, n, word);
+    int trans_word = my_atoi(word);
+    return binary_search_helper((nanpa_entry *) ptr, n, trans_word);
 }
 
 int main (int argc, char **argv) {
@@ -155,6 +160,7 @@ int main (int argc, char **argv) {
         case 3:{
             filename = argv[1];
             word = argv[2];
+            
             ptr = map_file(filename, &file_size);
             if (ptr == NULL) {
                 return 1;
