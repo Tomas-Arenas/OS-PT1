@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
-
-
+#include <sys/stat.h>
+#include <errno.h>
 
 typedef struct {
   char prefix[6];    // 6 digits
@@ -26,7 +26,6 @@ static int my_atoi(const char *s) {
     return result;
 }
 
-//my_write function
 static int my_write(int fd, const void *buf, size_t count) {
     size_t bytes_written = 0;
     size_t bytes_remaining = count;
@@ -53,8 +52,6 @@ static int my_strlen(const char *s) {
     return len;
 }
 
-
-
 static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
 {
     int low = 0;
@@ -75,7 +72,7 @@ static int binary_search_helper(nanpa_entry *dict, size_t n, char *word)
             high = mid - 1;
         }
     }
-    return -1;
+    return -2;
 }
 
 static int binary_search(void *ptr, size_t size, char *word){
@@ -87,37 +84,67 @@ static int binary_search(void *ptr, size_t size, char *word){
     return binary_search_helper((nanpa_entry *) ptr, n, word);
 }
 
-
-
-
-
 int main (int argc, char **argv) {
     int fd;
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s <filename> <prefix>\n", argv[0]);
-        return 1;
+    switch(argc) {
+        case 1: {
+            my_write(STDERR_FILENO, "\nThis is not a well-formed call to findlocation", 
+            my_strlen("\nThis is not a well-formed call to findlocation.\n"));
+            return 1;
+        }
+        case 2: {
+            fd = open("nanpa.txt", O_RDONLY);
+            if (fd == -1) {
+                my_write(STDERR_FILENO, "Error: file not found\n", my_strlen("Error: file not found\n"));
+                return 1;
+            }
+            struct stat sb;
+            if (fstat(fd, &sb) == -1) {
+                perror("fstat");
+                return 1;
+            }
+            void *ptr = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+            if (ptr == MAP_FAILED) {
+                perror("mmap");
+                return 1;
+            }
+            if (binary_search(ptr, sb.st_size, argv[1]) == -2) {
+                my_write(STDERR_FILENO, "Error: prefix not found\n", my_strlen("Error: prefix not found\n"));
+                return 1;
+            }
+            if (munmap(ptr, sb.st_size) == -1) {
+                perror("munmap");
+                return 1;
+            }
+            close(fd);
+            break;
+        }
+        case 3:{
+            fd = open(argv[2], O_RDONLY);
+            if (fd == -1) {
+                my_write(STDERR_FILENO, "Error: file not found\n", my_strlen("Error: file not found\n"));
+                return 1;
+            }
+            struct stat sb;
+            if (fstat(fd, &sb) == -1) {
+                perror("fstat");
+                return 1;
+            }
+            void *ptr = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+            if (ptr == MAP_FAILED) {
+                perror("mmap");
+                return 1;
+            }
+            if (binary_search(ptr, sb.st_size, argv[1]) == -2) {
+                my_write(STDERR_FILENO, "Error: prefix not found\n", my_strlen("Error: prefix not found\n"));
+                return 1;
+            }
+            if (munmap(ptr, sb.st_size) == -1) {
+                perror("munmap");
+                return 1;
+            }
+            close(fd);
+            break;
+        }
     }
-    fd = open(argv[1], O_RDONLY);
-    if (fd == -1) {
-        perror("open");
-        return 1;
-    }
-    off_t size = lseek(fd, 0, SEEK_END);
-    if (size == -1) {
-        perror("lseek");
-        return 1;
-    }
-    lseek(fd, 0, SEEK_SET);
-    void *ptr = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-    if (ptr == MAP_FAILED) {
-        perror("mmap");
-        return 1;
-    }
-    int result = binary_search(ptr, size, argv[2]);
-    if (result == -1) {
-        fprintf(stderr, "Prefix not found\n");
-    }
-    munmap(ptr, size);
-    close(fd);
-    return 0;
 }
